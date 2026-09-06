@@ -5,6 +5,7 @@ import com.sellingphone.dto.request.LoginRequest;
 import com.sellingphone.dto.request.OtpVerifyRequest;
 import com.sellingphone.dto.request.RefreshTokenRequest;
 import com.sellingphone.dto.request.RegisterRequest;
+import com.sellingphone.dto.request.RegisterVerifyRequest;
 import com.sellingphone.dto.request.ResetPasswordRequest;
 import com.sellingphone.dto.response.ApiResponse;
 import com.sellingphone.dto.response.AuthResponse;
@@ -28,10 +29,18 @@ public class UserController {
 
     private final UserService userService;
 
-    // POST /api/user/register — Đăng ký
+    // POST /api/user/register — Bước 1: kiểm tra & gửi OTP
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<Void>> register(@RequestBody RegisterRequest request) {
         userService.register(request);
+        return ResponseEntity.ok(
+                ApiResponse.ok("Mã OTP đã được gửi đến email. Vui lòng xác thực để hoàn tất đăng ký."));
+    }
+
+    // POST /api/user/register/verify-otp — Bước 2: xác thực OTP & tạo tài khoản
+    @PostMapping("/register/verify-otp")
+    public ResponseEntity<ApiResponse<Void>> verifyRegister(@RequestBody RegisterVerifyRequest request) {
+        userService.verifyRegister(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Đăng ký thành công! Vui lòng đăng nhập."));

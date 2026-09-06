@@ -1,11 +1,14 @@
 package com.sellingphone.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sellingphone.config.JwtService;
 import com.sellingphone.dto.request.ForgotPasswordRequest;
 import com.sellingphone.dto.request.LoginRequest;
 import com.sellingphone.dto.request.OtpVerifyRequest;
 import com.sellingphone.dto.request.RefreshTokenRequest;
 import com.sellingphone.dto.request.RegisterRequest;
+import com.sellingphone.dto.request.RegisterVerifyRequest;
 import com.sellingphone.dto.request.ResetPasswordRequest;
 import com.sellingphone.dto.response.AuthResponse;
 import com.sellingphone.dto.response.UserResponse;
@@ -32,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -48,19 +52,21 @@ public class UserService {
     private final EmailService          emailService;
     private final UserMapper            userMapper;
     private final RedisTemplate<String, String> redisTemplate;
+    private final ObjectMapper                  objectMapper;
 
     @Value("${jwt.refresh-expiration-ms}")
     private long refreshExpirationMs;
 
-    private static final String REFRESH_PREFIX    = "refresh:";
-    private static final String RESET_PREFIX      = "reset:";
-    private static final long   RESET_TTL_MINUTES = 10;
-    private static final String DEFAULT_ROLE      = "USER";
+    private static final String REFRESH_PREFIX         = "refresh:";
+    private static final String RESET_PREFIX           = "reset:";
+    private static final String REGISTER_PREFIX        = "register:";
+    private static final long   RESET_TTL_MINUTES      = 10;
+    private static final long   REGISTER_TTL_MINUTES   = 10;
+    private static final String DEFAULT_ROLE           = "USER";
 
     // -----------------------------------------------
-    // 1. Đăng ký
+    // 1. Đăng ký — Bước 1: kiểm tra & gửi OTP
     // -----------------------------------------------
-    @Transactional
     public void register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new AppException(ErrorCode.USERNAME_ALREADY_EXISTS);
@@ -68,24 +74,77 @@ public class UserService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
+        // Kiểm tra thêm trong Redis (tránh spam đăng ký cùng email đang pending)
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(REGISTER_PREFIX + request.getEmail()))) {
+            throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
 
-        Role userRole = roleRepository.findByName(DEFAULT_ROLE)
-                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+        // Lưu thông tin đăng ký tạm thời vào Redis (TTL = 10 phút)
+        try {
+            String pendingData = objectMapper.writeValueAsString(Map.of(
+                    "username", request.getUsername(),
+                    "password", passwordEncoder.encode(request.getPassword())
+            ));
+            redisTemplate.opsForValue().set(
+                    REGISTER_PREFIX + request.getEmail(),
+                    pendingData,
+                    Duration.ofMinutes(REGISTER_TTL_MINUTES)
+            );
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.INTERNAL_ERROR);
+        }
 
-        Timestamp now = Timestamp.from(Instant.now());
+        // Gửi OTP xác thực về email
+        emailService.sendOtpEmail(request.getEmail());
+        log.info("[UserService] Gửi OTP đăng ký đến: {}", request.getEmail());
+    }
 
-        User newUser = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(userRole)
-                .status((byte) 1)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
+    // -----------------------------------------------
+    // 1b. Đăng ký — Bước 2: xác thực OTP & tạo user
+    // -----------------------------------------------
+    @Transactional
+    public void verifyRegister(RegisterVerifyRequest request) {
+        // Xác thực OTP
+        if (!emailService.validateOtp(request.getEmail(), request.getOtp())) {
+            throw new AppException(ErrorCode.INVALID_OTP);
+        }
 
-        userRepository.save(newUser);
-        log.info("[UserService] Tài khoản mới: {}", request.getUsername());
+        // Lấy thông tin đăng ký tạm từ Redis
+        String pendingData = redisTemplate.opsForValue().get(REGISTER_PREFIX + request.getEmail());
+        if (pendingData == null) {
+            throw new AppException(ErrorCode.INVALID_OTP);
+        }
+
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, String> data = objectMapper.readValue(pendingData, Map.class);
+            String username        = data.get("username");
+            String encodedPassword = data.get("password");
+
+            Role userRole = roleRepository.findByName(DEFAULT_ROLE)
+                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+
+            Timestamp now = Timestamp.from(Instant.now());
+
+            User newUser = User.builder()
+                    .username(username)
+                    .email(request.getEmail())
+                    .password(encodedPassword)
+                    .role(userRole)
+                    .status((byte) 1)
+                    .createdAt(now)
+                    .updatedAt(now)
+                    .build();
+
+            userRepository.save(newUser);
+
+            // Xóa dữ liệu tạm khỏi Redis
+            redisTemplate.delete(REGISTER_PREFIX + request.getEmail());
+            log.info("[UserService] Tài khoản mới đã được xác thực và tạo: {}", username);
+
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.INTERNAL_ERROR);
+        }
     }
 
     // -----------------------------------------------
