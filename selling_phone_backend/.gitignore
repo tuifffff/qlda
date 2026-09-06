@@ -37,10 +37,10 @@ out/
 # Sensitive config - QUAN TRONG
 # Khong up len GitHub vi chua password DB, JWT secret, mail password
 # ========================
-src/main/resources/application.properties
-src/main/resources/application-*.properties
-src/main/resources/application.yml
-src/main/resources/application-*.yml
+**/src/main/resources/application.properties
+**/src/main/resources/application-*.properties
+**/src/main/resources/application.yml
+**/src/main/resources/application-*.yml
 
 # ========================
 # Logs
