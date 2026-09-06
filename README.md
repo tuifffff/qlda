@@ -98,7 +98,9 @@ use sellingphone_db;
 
 INSERT INTO categories (CategoryName) VALUES 
 ('Điện thoại thông minh');
-
+INSERT INTO banners (createdAt, imageUrl, isActive, linkUrl, updatedAt) VALUES 
+(CURRENT_TIMESTAMP, 'https://res.cloudinary.com/iukp3opy/image/upload/v1788666294/iphone-17-pro-max-banner.webp', 1, '/product/1', CURRENT_TIMESTAMP),
+(CURRENT_TIMESTAMP, 'https://res.cloudinary.com/iukp3opy/image/upload/v1788666299/s26-fe-4.webp', 1, '/product/2', CURRENT_TIMESTAMP);
 INSERT INTO brands (BrandName, BrandLogo) VALUES 
 ('Apple', 'https://res.cloudinary.com/iukp3opy/image/upload/v1788616886/Apple_logo_black.svg.webp'),
 ('Samsung', 'https://res.cloudinary.com/iukp3opy/image/upload/v1788616891/Samsung_old_logo_before_year_2015.svg.webp');
