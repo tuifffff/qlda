@@ -131,7 +131,7 @@ public class CartService {
      * Lấy giỏ hàng hiện có của user; nếu chưa có thì tạo mới (lazy init).
      */
     private Cart getOrCreateCart(String username) {
-        return cartRepository.findByUser_Username(username)
+        return cartRepository.findWithItemsByUsername(username)
                 .orElseGet(() -> {
                     User user = userRepository.findByUsername(username)
                             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));

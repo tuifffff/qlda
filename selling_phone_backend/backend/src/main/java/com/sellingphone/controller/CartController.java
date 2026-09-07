@@ -4,6 +4,7 @@ import com.sellingphone.dto.request.CartItemRequest;
 import com.sellingphone.dto.response.ApiResponse;
 import com.sellingphone.dto.response.CartResponse;
 import com.sellingphone.service.CartService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +22,9 @@ public class CartController {
     @GetMapping("/my-cart")
     public ResponseEntity<ApiResponse<CartResponse>> getMyCart(
             @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(ApiResponse.fail("Bạn cần đăng nhập"));
+        }
         CartResponse cart = cartService.getMyCart(userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.ok("Lấy giỏ hàng thành công", cart));
     }
@@ -29,7 +33,10 @@ public class CartController {
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<CartResponse>> addToCart(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody CartItemRequest request) {
+            @Valid @RequestBody CartItemRequest request) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(ApiResponse.fail("Bạn cần đăng nhập"));
+        }
         CartResponse cart = cartService.addToCart(userDetails.getUsername(), request);
         return ResponseEntity.ok(ApiResponse.ok("Thêm vào giỏ hàng thành công", cart));
     }
@@ -38,7 +45,10 @@ public class CartController {
     @PutMapping("/update")
     public ResponseEntity<ApiResponse<CartResponse>> updateCartItem(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody CartItemRequest request) {
+            @Valid @RequestBody CartItemRequest request) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(ApiResponse.fail("Bạn cần đăng nhập"));
+        }
         CartResponse cart = cartService.updateCartItem(userDetails.getUsername(), request);
         return ResponseEntity.ok(ApiResponse.ok("Cập nhật giỏ hàng thành công", cart));
     }
@@ -48,6 +58,9 @@ public class CartController {
     public ResponseEntity<ApiResponse<CartResponse>> removeFromCart(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Integer versionId) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(ApiResponse.fail("Bạn cần đăng nhập"));
+        }
         CartResponse cart = cartService.removeFromCart(userDetails.getUsername(), versionId);
         return ResponseEntity.ok(ApiResponse.ok("Đã xóa sản phẩm khỏi giỏ hàng", cart));
     }
