@@ -14,8 +14,13 @@ public enum ErrorCode {
     INVALID_RESET_TOKEN     (HttpStatus.BAD_REQUEST,           "Token đặt lại mật khẩu không hợp lệ hoặc đã hết hạn"),
     INVALID_REFRESH_TOKEN   (HttpStatus.UNAUTHORIZED,          "Refresh token không hợp lệ hoặc đã hết hạn"),
 
-    // Product
+    // Product / Version
     PRODUCT_NOT_FOUND       (HttpStatus.NOT_FOUND,             "Không tìm thấy sản phẩm"),
+    VERSION_NOT_FOUND       (HttpStatus.NOT_FOUND,             "Không tìm thấy phiên bản sản phẩm"),
+    OUT_OF_STOCK            (HttpStatus.BAD_REQUEST,           "Sản phẩm không đủ số lượng trong kho"),
+
+    // Cart
+    CART_ITEM_NOT_FOUND     (HttpStatus.NOT_FOUND,             "Sản phẩm không tồn tại trong giỏ hàng"),
 
     // User
     USER_NOT_FOUND          (HttpStatus.NOT_FOUND,             "Không tìm thấy người dùng"),
