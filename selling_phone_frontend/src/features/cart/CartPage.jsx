@@ -12,9 +12,9 @@ export function CartPage() {
   if (items.length === 0) {
     return (
       <section className="page-section narrow">
-        <EmptyState title="Gio hang dang trong" description="Hay chon mot phien ban dien thoai de them vao gio." />
+        <EmptyState title="Giỏ hàng đang trống" description="Hãy chọn một phiên bản điện thoại để thêm vào giỏ." />
         <Link className="primary-link centered" to="/">
-          Xem san pham
+          Xem sản phẩm
         </Link>
       </section>
     );
@@ -23,9 +23,9 @@ export function CartPage() {
   return (
     <section className="page-section narrow">
       <div className="cart-header">
-        <h1>Gio hang</h1>
+        <h1>Giỏ hàng</h1>
         <button className="secondary-button" type="button" onClick={clearCart}>
-          Xoa tat ca
+          Xóa tất cả
         </button>
       </div>
       <div className="cart-list">
@@ -46,14 +46,14 @@ export function CartPage() {
               value={item.quantity}
               onChange={(event) => updateQuantity(item.versionId, Number(event.target.value))}
             />
-            <button className="icon-button" type="button" onClick={() => removeItem(item.versionId)} title="Xoa">
+            <button className="icon-button" type="button" onClick={() => removeItem(item.versionId)} title="Xóa">
               <Trash2 size={18} />
             </button>
           </article>
         ))}
       </div>
       <div className="cart-total">
-        <span>Tam tinh</span>
+        <span>Tạm tính</span>
         <strong>{formatCurrency(total)}</strong>
       </div>
     </section>

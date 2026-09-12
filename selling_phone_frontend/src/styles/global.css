@@ -536,6 +536,175 @@ h1 {
   border-bottom-color: #172026;
 }
 
+/* ── Password Field with Toggle ── */
+.auth-field-password {
+  position: relative;
+}
+
+.auth-field-password input {
+  padding-right: 44px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+
+.password-toggle-btn:hover {
+  color: #172026;
+  background: #f0f2f4;
+}
+
+/* ── Success Icon (reset password done) ── */
+.auth-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 20px;
+  border-radius: 50%;
+  background: #d1e7dd;
+  color: #0f5132;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* ── Register Step Transition ── */
+.register-step-animate {
+  animation: registerFadeSlideIn 0.35s ease-out both;
+}
+
+@keyframes registerFadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── OTP Back Button ── */
+.otp-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #6b7680;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.otp-back-btn:hover {
+  color: #172026;
+}
+
+/* ── OTP Input Group ── */
+.otp-input-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 24px 0 16px;
+}
+
+.otp-digit-input {
+  width: 48px;
+  height: 56px;
+  padding: 0;
+  border: 1.5px solid #ccd5de;
+  border-radius: 8px;
+  background: #f8fafb;
+  color: #172026;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  caret-color: #db4444;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.otp-digit-input:focus {
+  border-color: #db4444;
+  background: #ffffff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(219, 68, 68, 0.12);
+}
+
+.otp-digit-input:not(:placeholder-shown),
+.otp-digit-input:not([value=""]) {
+  background: #ffffff;
+  border-color: #172026;
+}
+
+/* ── OTP Countdown ── */
+.otp-countdown {
+  text-align: center;
+  color: #6b7680;
+  font-size: 13px;
+  margin: 8px 0 4px;
+}
+
+.otp-countdown strong {
+  color: #db4444;
+  font-weight: 700;
+}
+
+/* ── OTP Actions ── */
+.otp-actions {
+  justify-content: center;
+}
+
+/* ── OTP Resend ── */
+.otp-resend {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.otp-resend-disabled {
+  color: #999;
+  font-size: 13px;
+}
+
+.otp-resend-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #db4444;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.otp-resend-btn:hover {
+  color: #c03a3a;
+  text-decoration: underline;
+}
+
+.otp-resend-btn:disabled {
+  color: #999;
+  cursor: not-allowed;
+}
+
 /* ── Profile panel (keep existing) ── */
 .profile-panel {
   width: min(440px, 100%);
@@ -650,6 +819,15 @@ input:focus {
   display: block;
   margin-bottom: 18px;
   font-size: 28px;
+}
+
+.version-section-label {
+  margin: 0 0 8px;
+  color: #34424e;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .version-list {
@@ -1568,12 +1746,13 @@ dd {
 
 /* ── Main header ── */
 .hd-main {
-  background: #ffffff;
+  background: #64b5f6;
   padding: 12px 0;
 }
 
 .hd-main .hd-wrap {
-  gap: 28px;
+  gap: 20px;
+  justify-content: space-between;
 }
 
 .hd-logo {
@@ -1644,6 +1823,119 @@ dd {
 
 .hd-search button:hover {
   background: #c03a3a;
+}
+
+/* Category Dropdown */
+.hd-category {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.hd-category-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 8px;
+  color: #333;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.hd-category-btn:hover {
+  background: #e8e8e8;
+}
+
+.hd-category-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 10px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.hd-category:hover .hd-category-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.hd-cat-item-wrap {
+  position: relative;
+  display: block;
+}
+
+.hd-cat-item {
+  display: block;
+  padding: 12px 20px;
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+}
+
+.hd-cat-item:hover,
+.hd-cat-item-wrap:hover > .hd-cat-item {
+  background: #fcf0f0;
+  color: #db4444;
+}
+
+/* Submenu */
+.hd-sub-menu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-10px);
+  transition: all 0.2s ease;
+  z-index: 101;
+}
+
+.hd-cat-item-wrap:hover .hd-sub-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.hd-sub-item {
+  display: block;
+  padding: 10px 20px;
+  color: #555;
+  text-decoration: none;
+  font-size: 13.5px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.hd-sub-item:hover {
+  background: #fcf0f0;
+  color: #db4444;
 }
 
 /* Action icons */
@@ -1758,6 +2050,47 @@ dd {
   padding: 64px 20px;
   min-height: 380px;
   color: #ffffff;
+}
+
+.bn-slide.has-image {
+  padding: 0;
+  min-height: auto;
+}
+
+.bn-slide-link {
+  width: 100%;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+}
+
+.bn-img-container {
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d0d11;
+  overflow: hidden;
+}
+
+.bn-img {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  display: block;
+}
+
+.bn-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 30px 20px;
 }
 
 .bn-slide-inner {

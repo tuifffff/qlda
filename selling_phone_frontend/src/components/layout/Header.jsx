@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate, useSearchParams } from 'react-router-dom';
-import { LogOut, Search, ShoppingCart, Smartphone, User, Phone, Truck } from 'lucide-react';
+import { LogOut, Search, ShoppingCart, Smartphone, User, Phone, Truck, Menu } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore.js';
 import { useCartStore } from '../../stores/cartStore.js';
 import { authApi } from '../../api/authApi.js';
@@ -15,7 +15,6 @@ export function Header() {
   const [searchParams] = useSearchParams();
   const [searchVal, setSearchVal] = useState('');
 
-  // Đồng bộ ô search với URL param
   useEffect(() => {
     setSearchVal(searchParams.get('search') || '');
   }, [searchParams]);
@@ -56,6 +55,41 @@ export function Header() {
             <Smartphone size={28} />
             <span>Selling Phone</span>
           </Link>
+
+          <div className="hd-category">
+            <button className="hd-category-btn" type="button">
+              <Menu size={20} />
+              <span>Danh mục</span>
+            </button>
+            <div className="hd-category-dropdown">
+              <div className="hd-cat-item-wrap">
+                <Link to="/?brand=1" className="hd-cat-item">Điện thoại Apple</Link>
+                <div className="hd-sub-menu">
+                  <Link to="/?search=iPhone+15" className="hd-sub-item">iPhone 15 Series</Link>
+                  <Link to="/?search=iPhone+14" className="hd-sub-item">iPhone 14 Series</Link>
+                  <Link to="/?search=iPhone+13" className="hd-sub-item">iPhone 13 Series</Link>
+                </div>
+              </div>
+              <div className="hd-cat-item-wrap">
+                <Link to="/?brand=2" className="hd-cat-item">Điện thoại Samsung</Link>
+                <div className="hd-sub-menu">
+                  <Link to="/?search=Galaxy+S24" className="hd-sub-item">Galaxy S24 Series</Link>
+                  <Link to="/?search=Galaxy+Z" className="hd-sub-item">Galaxy Z Fold / Z Flip</Link>
+                  <Link to="/?search=Galaxy+A" className="hd-sub-item">Galaxy A Series</Link>
+                </div>
+              </div>
+              <div className="hd-cat-item-wrap">
+                <Link to="/?brand=3" className="hd-cat-item">Điện thoại Xiaomi</Link>
+                <div className="hd-sub-menu">
+                  <Link to="/?search=Xiaomi+14" className="hd-sub-item">Xiaomi 14 Series</Link>
+                  <Link to="/?search=Redmi+Note" className="hd-sub-item">Redmi Note Series</Link>
+                </div>
+              </div>
+              <div className="hd-cat-item-wrap">
+                <Link to="/" className="hd-cat-item">Phụ kiện</Link>
+              </div>
+            </div>
+          </div>
 
           <form className="hd-search" onSubmit={handleSearch}>
             <input
@@ -102,8 +136,6 @@ export function Header() {
       {/* ── Navigation bar ── */}
       <nav className="hd-nav">
         <div className="hd-wrap">
-          <NavLink to="/" end>Trang chủ</NavLink>
-          <NavLink to="/cart">Giỏ hàng</NavLink>
           {accessToken && <NavLink to="/profile">Tài khoản</NavLink>}
         </div>
       </nav>

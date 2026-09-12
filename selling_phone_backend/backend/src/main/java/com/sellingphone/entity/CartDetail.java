@@ -29,8 +29,7 @@ public class CartDetail {
     private Integer quantity;
 
     // Optimistic locking — ngăn race condition khi 2 request cùng update quantity
-    @Version
+    @jakarta.persistence.Version
     @Column(name = "version")
     private Long version_lock;
 }
-

@@ -74,10 +74,6 @@ public class UserService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
-        // Kiểm tra thêm trong Redis (tránh spam đăng ký cùng email đang pending)
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(REGISTER_PREFIX + request.getEmail()))) {
-            throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
-        }
 
         // Lưu thông tin đăng ký tạm thời vào Redis (TTL = 10 phút)
         try {

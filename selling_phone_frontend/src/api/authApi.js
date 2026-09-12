@@ -2,6 +2,7 @@ import { axiosClient } from './axiosClient.js';
 
 export const authApi = {
   register: (payload) => axiosClient.post('/api/user/register', payload),
+  registerVerify: (payload) => axiosClient.post('/api/user/register/verify-otp', payload),
   login: (payload) => axiosClient.post('/api/user/login', payload),
   forgotPassword: (payload) => axiosClient.post('/api/user/forgot-password', payload),
   verifyOtp: (payload) => axiosClient.post('/api/user/verify-otp', payload),

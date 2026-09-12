@@ -10,6 +10,7 @@ export function ProductDetailPage() {
   const { id } = useParams();
   const addItem = useCartStore((state) => state.addItem);
   const [product, setProduct] = useState(null);
+  const [selectedStorage, setSelectedStorage] = useState(null);
   const [selectedVersionId, setSelectedVersionId] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState('');
@@ -21,15 +22,38 @@ export function ProductDetailPage() {
       .getById(id)
       .then((response) => {
         if (!mounted) return;
-        setProduct(response.data);
-        setSelectedVersionId(response.data.versions?.[0]?.versionId || null);
+        const data = response.data;
+        setProduct(data);
+        // Chọn storage đầu tiên
+        const firstStorage = data.versions?.[0]?.storage || null;
+        setSelectedStorage(firstStorage);
+        setSelectedVersionId(data.versions?.[0]?.versionId || null);
       })
-      .catch((error) => setMessage(error.message || 'Khong tai duoc chi tiet san pham'))
+      .catch((error) => setMessage(error.message || 'Không thể tải chi tiết sản phẩm'))
       .finally(() => mounted && setLoading(false));
     return () => {
       mounted = false;
     };
   }, [id]);
+
+  // Danh sách bộ nhớ không trùng lặp
+  const uniqueStorages = useMemo(() => {
+    if (!product?.versions) return [];
+    const seen = new Set();
+    return product.versions
+      .filter((v) => {
+        if (seen.has(v.storage)) return false;
+        seen.add(v.storage);
+        return true;
+      })
+      .map((v) => v.storage);
+  }, [product]);
+
+  // Các version theo storage đã chọn
+  const colorVersions = useMemo(() => {
+    if (!product?.versions || !selectedStorage) return [];
+    return product.versions.filter((v) => v.storage === selectedStorage);
+  }, [product, selectedStorage]);
 
   const selectedVersion = useMemo(
     () => product?.versions?.find((version) => version.versionId === selectedVersionId),
@@ -40,6 +64,16 @@ export function ProductDetailPage() {
     if (!product) return [];
     return [product.image, ...(product.imageUrls || [])].filter(Boolean);
   }, [product]);
+
+  const handleSelectStorage = (storage) => {
+    setSelectedStorage(storage);
+    // Tự động chọn version đầu tiên của storage mới
+    const firstVersion = product?.versions?.find((v) => v.storage === storage);
+    if (firstVersion) {
+      setSelectedVersionId(firstVersion.versionId);
+      setQuantity(1);
+    }
+  };
 
   const handleAddToCart = () => {
     if (!product || !selectedVersion) return;
@@ -54,10 +88,10 @@ export function ProductDetailPage() {
       quantity,
       stock: selectedVersion.stock,
     });
-    setMessage('Da them vao gio hang');
+    setMessage('Đã thêm vào giỏ hàng');
   };
 
-  if (loading) return <div className="page-section loading">Dang tai chi tiet...</div>;
+  if (loading) return <div className="page-section loading">Đang tải chi tiết...</div>;
   if (!product) return <div className="page-section form-message error">{message}</div>;
 
   return (
@@ -82,22 +116,46 @@ export function ProductDetailPage() {
         <p className="detail-description">{product.description}</p>
         <strong className="detail-price">{formatCurrency(selectedVersion?.price)}</strong>
 
-        <div className="version-list">
-          {product.versions?.map((version) => (
-            <button
-              key={version.versionId}
-              className={version.versionId === selectedVersionId ? 'version-option active' : 'version-option'}
-              type="button"
-              onClick={() => {
-                setSelectedVersionId(version.versionId);
-                setQuantity(1);
-              }}
-            >
-              <span>{version.storage}</span>
-              <small>{version.colour}</small>
-            </button>
-          ))}
-        </div>
+        {/* Chọn bộ nhớ */}
+        {uniqueStorages.length > 0 && (
+          <>
+            <p className="version-section-label">Bộ nhớ</p>
+            <div className="version-list">
+              {uniqueStorages.map((storage) => (
+                <button
+                  key={storage}
+                  className={storage === selectedStorage ? 'version-option active' : 'version-option'}
+                  type="button"
+                  onClick={() => handleSelectStorage(storage)}
+                >
+                  <span>{storage}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Chọn màu sắc */}
+        {colorVersions.length > 0 && (
+          <>
+            <p className="version-section-label">Màu sắc</p>
+            <div className="version-list">
+              {colorVersions.map((version) => (
+                <button
+                  key={version.versionId}
+                  className={version.versionId === selectedVersionId ? 'version-option active' : 'version-option'}
+                  type="button"
+                  onClick={() => {
+                    setSelectedVersionId(version.versionId);
+                    setQuantity(1);
+                  }}
+                >
+                  <span>{version.colour}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
         <div className="purchase-row">
           <div className="quantity-stepper">
@@ -114,21 +172,21 @@ export function ProductDetailPage() {
           </div>
           <button className="primary-button" type="button" onClick={handleAddToCart} disabled={!selectedVersion}>
             <ShoppingCart size={18} />
-            Them vao gio
+            Thêm vào giỏ
           </button>
         </div>
-        <p className="stock-line">Con lai: {selectedVersion?.stock ?? 0}</p>
+        <p className="stock-line">Còn lại: {selectedVersion?.stock ?? 0}</p>
         {message && <div className="form-message success">{message}</div>}
       </div>
 
       {product.specs && (
         <div className="spec-panel">
-          <h2>Thong so ky thuat</h2>
+          <h2>Thông số kỹ thuật</h2>
           <dl>
             {Object.entries(product.specs).map(([key, value]) => (
               <div key={key}>
                 <dt>{key}</dt>
-                <dd>{value || 'Dang cap nhat'}</dd>
+                <dd>{value || 'Đang cập nhật'}</dd>
               </div>
             ))}
           </dl>
