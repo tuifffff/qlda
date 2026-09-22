@@ -27,6 +27,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -44,6 +45,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
+                // Các endpoint public (không cần đăng nhập)
                 .requestMatchers(
                         "/api/user/register",
                         "/api/user/register/verify-otp",
@@ -56,6 +58,8 @@ public class SecurityConfig {
                         "/api/product/**",
                         "/api/banner/active"
                 ).permitAll()
+                // Chỉ GET questions là public — POST/PUT/DELETE yêu cầu auth
+                .requestMatchers(HttpMethod.GET, "/api/products/*/questions").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session ->

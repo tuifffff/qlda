@@ -27,10 +27,6 @@ public class CartDetail {
 
     @Column(name = "Quantity", nullable = false)
     private Integer quantity;
-
-    // Optimistic locking — ngăn race condition khi 2 request cùng update quantity
-    @Version
-    @Column(name = "version")
-    private Long version_lock;
 }
+
 

@@ -3,6 +3,7 @@ package com.sellingphone.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sellingphone.config.JwtService;
+import com.sellingphone.dto.request.ChangePasswordRequest;
 import com.sellingphone.dto.request.ForgotPasswordRequest;
 import com.sellingphone.dto.request.LoginRequest;
 import com.sellingphone.dto.request.OtpVerifyRequest;
@@ -10,6 +11,7 @@ import com.sellingphone.dto.request.RefreshTokenRequest;
 import com.sellingphone.dto.request.RegisterRequest;
 import com.sellingphone.dto.request.RegisterVerifyRequest;
 import com.sellingphone.dto.request.ResetPasswordRequest;
+import com.sellingphone.dto.request.UpdateProfileRequest;
 import com.sellingphone.dto.response.AuthResponse;
 import com.sellingphone.dto.response.UserResponse;
 import com.sellingphone.entity.Role;
@@ -31,6 +33,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -50,6 +53,7 @@ public class UserService {
     private final JwtService            jwtService;
     private final UserDetailsService    userDetailsService;
     private final EmailService          emailService;
+    private final CloudinaryService     cloudinaryService;
     private final UserMapper            userMapper;
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper                  objectMapper;
@@ -259,6 +263,66 @@ public class UserService {
     public UserResponse getProfile(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        return userMapper.toUserResponse(user);
+    }
+
+    // -----------------------------------------------
+    // 9. Cập nhật thông tin cá nhân
+    //    (fullName, phoneNumber, gender)
+    // -----------------------------------------------
+    @Transactional
+    public UserResponse updateProfile(String username, UpdateProfileRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        if (request.getFullName()    != null) user.setFullName(request.getFullName());
+        if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
+        if (request.getGender()      != null) user.setGender(request.getGender());
+        user.setUpdatedAt(Timestamp.from(Instant.now()));
+
+        userRepository.save(user);
+        log.info("[UserService] Cập nhật thông tin: {}", username);
+        return userMapper.toUserResponse(user);
+    }
+
+    // -----------------------------------------------
+    // 10. Đổi mật khẩu (yêu cầu mật khẩu cũ)
+    // -----------------------------------------------
+    @Transactional
+    public void changePassword(String username, ChangePasswordRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new AppException(ErrorCode.WRONG_PASSWORD);
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setUpdatedAt(Timestamp.from(Instant.now()));
+        userRepository.save(user);
+        log.info("[UserService] Đổi mật khẩu: {}", username);
+    }
+
+    // -----------------------------------------------
+    // 11. Upload / cập nhật avatar lên Cloudinary
+    // -----------------------------------------------
+    @Transactional
+    public UserResponse uploadAvatar(String username, MultipartFile file) {
+        // Kiểm tra định dạng file
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new AppException(ErrorCode.INVALID_FILE_TYPE);
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        String avatarUrl = cloudinaryService.uploadImage(file, "avatars");
+        user.setAvatar(avatarUrl);
+        user.setUpdatedAt(Timestamp.from(Instant.now()));
+        userRepository.save(user);
+
+        log.info("[UserService] Cập nhật avatar: {} → {}", username, avatarUrl);
         return userMapper.toUserResponse(user);
     }
 
