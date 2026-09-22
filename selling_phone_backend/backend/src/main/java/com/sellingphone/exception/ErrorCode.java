@@ -22,9 +22,18 @@ public enum ErrorCode {
     // Cart
     CART_ITEM_NOT_FOUND     (HttpStatus.NOT_FOUND,             "Sản phẩm không tồn tại trong giỏ hàng"),
 
+    // Address
+    ADDRESS_NOT_FOUND       (HttpStatus.NOT_FOUND,             "Không tìm thấy địa chỉ"),
+    ADDRESS_ACCESS_DENIED   (HttpStatus.FORBIDDEN,             "Bạn không có quyền thao tác với địa chỉ này"),
+
+    // Q&A — Hỏi & Đáp
+    QUESTION_NOT_FOUND      (HttpStatus.NOT_FOUND,             "Không tìm thấy câu hỏi"),
+
     // User
     USER_NOT_FOUND          (HttpStatus.NOT_FOUND,             "Không tìm thấy người dùng"),
     EMAIL_NOT_FOUND         (HttpStatus.NOT_FOUND,             "Không tìm thấy tài khoản với email này"),
+    WRONG_PASSWORD          (HttpStatus.BAD_REQUEST,           "Mật khẩu hiện tại không đúng"),
+    INVALID_FILE_TYPE       (HttpStatus.BAD_REQUEST,           "Chỉ chấp nhận file ảnh (jpg, jpeg, png, webp)"),
 
     // System
     ROLE_NOT_FOUND          (HttpStatus.INTERNAL_SERVER_ERROR, "Vai trò mặc định chưa được khởi tạo trong hệ thống"),

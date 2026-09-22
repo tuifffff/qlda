@@ -40,7 +40,9 @@ public class CartService {
     // -----------------------------------------------
     @Transactional
     public CartResponse addToCart(String username, CartItemRequest request) {
-        Cart    cart    = getOrCreateCart(username);
+        // Dùng simple lookup để tránh L1 cache conflict khi reload sau
+        Cart cart = cartRepository.findByUser_Username(username)
+                .orElseGet(() -> getOrCreateCart(username));
         Version version = findVersion(request.getVersionId());
 
         // Kiểm tra tồn kho
@@ -71,9 +73,10 @@ public class CartService {
         }
 
         cartDetailRepository.save(detail);
+        cartDetailRepository.flush(); // đảm bảo ghi xuống DB trước khi reload
         log.info("[CartService] Thêm versionId={} x{} vào giỏ của: {}", version.getVersionId(), request.getQuantity(), username);
 
-        // Reload đầy đủ với JOIN FETCH
+        // Reload đầy đủ với JOIN FETCH từ DB sạch
         Cart updatedCart = cartRepository.findWithItemsByUsername(username).orElseThrow();
         return cartMapper.toCartResponse(updatedCart);
     }
@@ -84,7 +87,9 @@ public class CartService {
     // -----------------------------------------------
     @Transactional
     public CartResponse updateCartItem(String username, CartItemRequest request) {
-        Cart    cart    = getOrCreateCart(username);
+        // Dùng simple lookup (không JOIN FETCH) để tránh L1 cache conflict khi reload sau
+        Cart cart = cartRepository.findByUser_Username(username)
+                .orElseGet(() -> getOrCreateCart(username));
         Version version = findVersion(request.getVersionId());
 
         CartDetailId detailId = new CartDetailId(cart.getCartId(), version.getVersionId());
@@ -103,6 +108,7 @@ public class CartService {
             log.info("[CartService] Cập nhật versionId={} → qty={}: {}", version.getVersionId(), request.getQuantity(), username);
         }
 
+        // Reload sạch từ DB sau khi L1 cache chưa bị nhiễm
         Cart updatedCart = cartRepository.findWithItemsByUsername(username).orElseThrow();
         return cartMapper.toCartResponse(updatedCart);
     }
@@ -112,15 +118,19 @@ public class CartService {
     // -----------------------------------------------
     @Transactional
     public CartResponse removeFromCart(String username, Integer versionId) {
-        Cart cart = getOrCreateCart(username);
+        // Dùng simple lookup (không JOIN FETCH) để tránh L1 cache conflict khi reload sau
+        Cart cart = cartRepository.findByUser_Username(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         CartDetailId detailId = new CartDetailId(cart.getCartId(), versionId);
         CartDetail   detail   = cartDetailRepository.findById(detailId)
                 .orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
 
         cartDetailRepository.delete(detail);
+        cartDetailRepository.flush(); // đảm bảo DELETE được ghi xuống DB trước khi reload
         log.info("[CartService] Xóa versionId={} khỏi giỏ của: {}", versionId, username);
 
+        // Reload sạch từ DB sau khi đã flush
         Cart updatedCart = cartRepository.findWithItemsByUsername(username).orElseThrow();
         return cartMapper.toCartResponse(updatedCart);
     }
