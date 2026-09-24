@@ -1,5 +1,5 @@
-﻿import { useState, useEffect } from "react";
-import { Link, NavLink, useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { LogOut, Search, ShoppingCart, Smartphone, User, Phone, Truck } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore.js";
 import { useCartStore } from "../../stores/cartStore.js";
@@ -98,15 +98,6 @@ export function Header() {
           </div>
         </div>
       </div>
-
-      {/* Nav bar */}
-      <nav className="hd-nav">
-        <div className="hd-wrap">
-          <NavLink to="/" end>Trang chủ</NavLink>
-          <NavLink to="/cart">Giỏ hàng</NavLink>
-          {accessToken && <NavLink to="/profile">Tài khoản</NavLink>}
-        </div>
-      </nav>
     </header>
   );
 }
